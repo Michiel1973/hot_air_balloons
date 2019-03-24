@@ -16,6 +16,7 @@ Crafting recipe:
 [ ][W][ ]
 
 
+See license.txt for proper license information.
 
 Authors of media (models, textures)
 ----------------------------------------
