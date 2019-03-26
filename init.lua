@@ -35,7 +35,7 @@ local hot_air_balloon_entity_def =
 		hp_max = 1,
 		physical = true,
 		weight = 5,
-		collisionbox = {-0.65, 0, -0.65, 0.65, 1.1, 0.65},
+		collisionbox = {-0.65, 0, -0.65, 0.65, 1.11, 0.65},
 		visual = "mesh",
 		mesh = "hot_air_balloons_balloon.obj",
 		textures = {"hot_air_balloons_balloon_model.png"},
@@ -134,6 +134,8 @@ local hot_air_balloon_item_def =
 			then
 				itemstack:take_item()
 			end
+			local pos_to_place = pointed_thing.above
+			pos_to_place.y = pos_to_place.y + 0.9
 			minetest.add_entity(pointed_thing.above, "hot_air_balloons:balloon")
 		end
 		return itemstack
@@ -143,8 +145,8 @@ minetest.register_craftitem("hot_air_balloons:item", hot_air_balloon_item_def)
 minetest.register_craft({
 	output = "hot_air_balloons:item",
 	recipe = {
-		{"default:paper", "default:paper", "default:paper"},
-		{"default:paper", "",              "default:paper"},
-		{"",             "group:wood", ""                 },
+		{"default:paper", "default:paper",      "default:paper"},
+		{"default:paper", "bucket:bucket_lava", "default:paper"},
+		{"",              "group:wood",         ""             },
 	},
 })

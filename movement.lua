@@ -11,7 +11,7 @@ local max_ballooning_horizontal_speed = 3
 
 local function is_water_is_air(pos)
 	local node_name = minetest.get_node(pos).name
-	return minetest.get_item_group(node_name, "water"),
+	return minetest.get_item_group(node_name, "water") > 0,
 		node_name == "air"
 end
 local function get_vertical_acceleration(self)
@@ -32,7 +32,7 @@ end
 --if balloon is submerged
 local function float_up(self, vel)
 	self.submerged = true
-	vel.y = 0.2 --TODO: balance this
+	vel.y = 1 --TODO: balance this
 	return vel
 end
 
@@ -142,19 +142,20 @@ end
 
 --handle movement in different cases
 return function(self)
-	local pos = self.object:get_pos()
-	local on_water, in_air = is_water_is_air(pos)
+	local pos_in = self.object:get_pos()
+	local pos_under = vector_new(pos_in.x, pos_in.y - 0.1, pos_in.z)
+	local on_water, in_air = is_water_is_air(pos_under)
 	local acc = vector_new(0, 0, 0)
 	local vel = self.object:getvelocity()
 	local in_water
-	local pos_above = vector_new(pos.x, pos.y + 1, pos.z)
 	
-	if is_water_is_air(pos_above) > 0 --if submerged
+	
+	if is_water_is_air(pos_in) --if submerged
 	then
 		vel = float_up(self, vel)
 		acc.x, acc.z = handle_control(self, vel)
 		self.object:setvelocity(vel)
-	elseif on_water > 0 --if on water
+	elseif on_water --if on water
 	then
 		acc.y, vel = swim(self, vel)
 		self.object:setvelocity(vel)
@@ -167,6 +168,9 @@ return function(self)
 	else --if on ground
 		--only allow height change
 		acc.y = get_vertical_acceleration(self)
+		vel.x = 0
+		vel.z = 0
+		self.object:setvelocity(vel)
 	end
 	self.object:setacceleration(acc)
 end

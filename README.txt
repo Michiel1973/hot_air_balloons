@@ -6,13 +6,16 @@ Controls:
 	shift: decrease heat, lowering buoyancy
 	space: turn the balloon towards where the player is looking
 
+dependencies: default, bucket
+	
 Crafting recipe:
 [P] := paper
 [W] := wood
+[L] := lava bucket
 [ ] := nothing
 
 [P][P][P]
-[P][ ][P]
+[P][L][P]
 [ ][W][ ]
 
 
