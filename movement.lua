@@ -4,8 +4,11 @@ local math_hypot = math.hypot
 local atan = math.atan
 local cos = math.cos
 local sin = math.sin
+local abs = math.abs
 local pi = math.pi
+local min = math.min
 
+--max speed settings
 local max_ballooning_vertical_speed = 1
 local max_ballooning_horizontal_speed = 3
 
@@ -32,7 +35,7 @@ end
 --if balloon is submerged
 local function float_up(self, vel)
 	self.submerged = true
-	vel.y = 1 --TODO: balance this
+	vel.y = 1
 	return vel
 end
 
@@ -52,21 +55,42 @@ local function swim(self, vel)
 	end
 end
 
---rotates the balloon towards where the player is looking
-local pi_192ths = math.pi / 192
-local function rotate(self, player)
-	local player_yaw = player:get_look_horizontal()
-	local self_yaw = self.object:getyaw()
-	if self_yaw - player_yaw > 0
+
+local tau = pi * 2
+--returns the radian equivalent of a in the range [0, tau)
+local function to_radian(a)
+	if a < 0
 	then
-		self.object:setyaw(self_yaw - pi_192ths)
+		return to_radian(a + tau)
+	elseif a >= tau
+	then
+		return to_radian(a - tau)
 	else
-		self.object:setyaw(self_yaw + pi_192ths)
+		return a
+	end
+end
+--decides which is the shortest way to rotate towards where the player is looking
+local function get_rotate_direction(a, b)
+	return to_radian(a - b) < to_radian(b - a)
+end
+
+--rotates the balloon towards where the player is looking
+local pi_192ths = pi / 192 --radians to turn each step
+local function rotate(self, player)
+	-- + pi so it finishes rotating when looking towards where the player is looking
+	local player_yaw = player:get_look_horizontal() + pi
+	local self_yaw = self.object:getyaw()
+	
+	if get_rotate_direction(player_yaw, self_yaw)
+	then
+		self.object:setyaw(to_radian(self_yaw - pi_192ths))
+	else
+		self.object:setyaw(to_radian(self_yaw + pi_192ths))
 	end
 end
 
 --takes wasd and turns it into a 2d vector
-local pi_halves = math.pi / 2
+local pi_halves = pi / 2
 function get_direction(right, left, up, down)
 	local inline, cross = 0, 0
 	local move = right or left or up or down
@@ -90,7 +114,7 @@ end
 --[[
 space to rotate where the player is looking
 wasd to apply acceleration
-shift to let air
+shift to let out hot air, cooling the balloon
 ]]
 local function handle_control(self, vel)
 	local player = minetest.get_player_by_name(self.pilot or "")
