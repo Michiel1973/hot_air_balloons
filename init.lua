@@ -6,6 +6,26 @@ local is_in_creative = function(name)
 	return creative and creative.is_enabled_for
 		and creative.is_enabled_for(name)
 end
+
+local get_fire_particle = function (pos)
+	pos.y = pos.y + 3.5
+	return {
+		amount = 3,
+		time = 1,
+		minpos = pos,
+		maxpos = pos,
+		minvel = {x = 0, y = 1, z = 0},
+		maxvel = {x = 0, y = 1, z = 0},
+		minexptime = 1,
+		maxexptime = 1,
+		minsize = 10,
+		maxsize = 5,
+		collisiondetection = false,
+		vertical = false,
+		texture = "hot_air_balloons_flame.png"
+	}
+end
+
 local add_heat = function(self, player)
 	local item_stack = player:get_wielded_item()
 	local item_name = item_stack:get_name()
@@ -19,6 +39,9 @@ local add_heat = function(self, player)
 	if heat < 12000 --cap heat at 12000 (10 min)
 	then
 		self.heat = heat
+		--adding particle effect
+		local pos = self.object:get_pos()
+		minetest.add_particlespawner(get_fire_particle(pos))
 		if not is_in_creative(player:get_player_name())
 		then
 			item_stack:take_item()
