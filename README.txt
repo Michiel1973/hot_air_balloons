@@ -21,12 +21,17 @@ Crafting recipe:
 
 See license.txt for proper license information.
 
+Author of code
+----------------------------------------
+NetherEran (LGPL v2.1)
+
 Authors of media (models, textures)
 ----------------------------------------
 Textures
 --------
 NetherEran (CC BY-SA 3.0):
 	hot_air_balloons_balloon.png
+	hot_air_balloons_balloon_flame.png
 	hot_air_balloons_balloon_model.png --Contains default_wood.png (by BlockMen) and default_aspen_wood.png (by sofar) (derived from default_pine_wood by paramat)
 
 Models
