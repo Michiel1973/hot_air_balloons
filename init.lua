@@ -146,6 +146,7 @@ local hot_air_balloon_item_def =
 	inventory_image = "hot_air_balloons_balloon.png",
 	stack_max = 1,
 	liquids_pointable = true,
+	groups = {flammable = 2},
 	on_place =
 	function (itemstack, placer, pointed_thing)
 		--places balloon if the clicked thing is a node and the above node is air
@@ -157,7 +158,7 @@ local hot_air_balloon_item_def =
 				itemstack:take_item()
 			end
 			local pos_to_place = pointed_thing.above
-			pos_to_place.y = pos_to_place.y - 0.6 --subtracting 0.6 to place on ground
+			pos_to_place.y = pos_to_place.y - 0.5 --subtracting 0.5 to place on ground
 			minetest.add_entity(pointed_thing.above, "hot_air_balloons:balloon")
 		end
 		--add remaining items to inventory
@@ -165,7 +166,8 @@ local hot_air_balloon_item_def =
 	end
 }
 minetest.register_craftitem("hot_air_balloons:item", hot_air_balloon_item_def)
-minetest.register_craft({
+minetest.register_craft(
+{
 	output = "hot_air_balloons:item",
 	recipe = {
 		{"default:paper", "default:paper",      "default:paper"},
@@ -173,3 +175,15 @@ minetest.register_craft({
 		{"",              "group:wood",         ""             },
 	},
 })
+minetest.register_craft(
+{
+	type = "fuel",
+	recipe = "boats:boat",
+	burntime = 20,
+})
+--[[
+minetest.register_craft(
+{
+	type = "aircraft"
+}
+]]
