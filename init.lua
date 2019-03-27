@@ -8,7 +8,7 @@ local is_in_creative = function(name)
 end
 
 local get_fire_particle = function (pos)
-	pos.y = pos.y + 3.5
+	pos.y = pos.y + 3
 	return {
 		amount = 3,
 		time = 1,
@@ -112,12 +112,11 @@ local hot_air_balloon_entity_def =
 		self.heat = 0
 		self.object:setvelocity({x = 0, y = 0, z = 0})
 	end,
-	--prepare custom properties
+	
 	on_activate = function(self, staticdata, dtime_s)
 		self.object:setvelocity({x = 0, y = 0, z = 0})
 	end,
 	
-	--TODO: do this
 	on_punch = function(self, puncher)
 		if not (puncher and puncher:is_player())
 		then
@@ -158,9 +157,10 @@ local hot_air_balloon_item_def =
 				itemstack:take_item()
 			end
 			local pos_to_place = pointed_thing.above
-			pos_to_place.y = pos_to_place.y + 0.9
+			pos_to_place.y = pos_to_place.y - 0.6 --subtracting 0.6 to place on ground
 			minetest.add_entity(pointed_thing.above, "hot_air_balloons:balloon")
 		end
+		--add remaining items to inventory
 		return itemstack
 	end
 }
