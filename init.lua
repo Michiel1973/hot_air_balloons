@@ -64,7 +64,7 @@ local hot_air_balloon_entity_def =
 {
 	initial_properties =
 	{
-		hp_max = 20, --higher health so accidental death isn't as easy
+		hp_max = 1, --higher health so accidental death isn't as easy
 		physical = true,
 		weight = 5,
 		collisionbox = {-0.65, -0.01, -0.65, 0.65, 1.11, 0.65},
@@ -121,6 +121,7 @@ local hot_air_balloon_entity_def =
 	end,
 	
 	on_activate = function(self, staticdata, dtime_s)
+		self.object:set_armor_groups({punch_operable = 1})
 		--so balloons don't get lost
 		self.object:setvelocity({x = 0, y = 0, z = 0})
 		
@@ -147,18 +148,23 @@ local hot_air_balloon_entity_def =
 	
 	
 	on_punch = function(self, puncher) --drop balloon item
-		if not (puncher and puncher:is_player())
+		if self.pilot
 		then
 			return
-		end
-		local inv = puncher:get_inventory()
-		if not is_in_creative(puncher:get_player_name())
-			or not inv:contains_item("main", "hot_air_balloons:item")
+		elseif not (puncher and puncher:is_player())
 		then
-			local leftover = inv:add_item("main", "hot_air_balloons:item")
-			if not leftover:is_empty()
+			return
+		else
+			self.object:remove()
+			local inv = puncher:get_inventory()
+			if not is_in_creative(puncher:get_player_name())
+				or not inv:contains_item("main", "hot_air_balloons:item")
 			then
-				add_item(self.object:get_pos(), leftover)
+				local leftover = inv:add_item("main", "hot_air_balloons:item")
+				if not leftover:is_empty()
+				then
+					add_item(self.object:get_pos(), leftover)
+				end
 			end
 		end
 	end,
