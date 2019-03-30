@@ -1,10 +1,12 @@
 This mod adds craftable and ridable hot air balloons to minetest.
 Controls:
-	right click with coal: increase heat and buoyancy
+	right click with coal lump: increase heat and buoyancy (*)
 	right click without coal: enter or leave balloon
 	left, right, up, down (default WASD): accelerate the balloon
 	sneak (default shift): decrease heat, lowering buoyancy
 	jump (default space): turn the balloon towards where the player is looking
+
+
 
 dependencies: default, bucket
 	
@@ -18,6 +20,9 @@ Crafting recipe:
 [P][L][P]
 [ ][W][ ]
 
+
+(*)any item with the "coal" group works for fuel. Higher coal group means higher heat
+	Note that coal blocks and ore from the default mod don't have the coal group
 
 See license.txt for proper license information.
 
