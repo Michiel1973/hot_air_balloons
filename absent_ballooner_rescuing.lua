@@ -11,19 +11,17 @@ local absent_ballooners = minetest.deserialize(storage:get_string("absent_balloo
 --putting leaving people into storage
 local leave_while_ballooning = function(player)
 	local parent = player:get_attach()
-	if parent and parent.get_luaentity
+	if parent and not parent:is_player()
+		and parent:get_luaentity().is_hot_air_balloon
 	then
-		local le = parent:get_luaentity()
-		if le.is_hot_air_balloon
-		then
-			--remove() only works if someone else is in the area hence mark_for_deletion
-			parent:remove()
-			absent_ballooners[player:get_player_name()] = true
-		end
+		--remove() only works if someone else is in the area,
+		--hence the need for mark_for_deletion
+		parent:remove()
+		absent_ballooners[player:get_player_name()] = true
 	end
 end
 
---same as on_leave but for all players
+--same as on_leave but for all players at once
 local on_shutdown = function()
 	local connected_players = minetest.get_connected_players()
 	for i, p in ipairs(connected_players)
@@ -67,15 +65,14 @@ minetest.register_on_joinplayer(on_join)
 --called in on_activate if balloon was spawned to rescue an absent ballooner
 local set_rescue = function(self, playername)
 	local player = minetest.get_player_by_name(playername)
+	self.pilot = playername
 	if not player --player logged off right away
 	then
 		self.object:remove()
 		return
 	end
-	local pos = player:get_pos()
-	self.pilot = playername
 	player:set_attach(self.object, "",
-		{x = 0,y = 1,z = 0}, {x = 0,y = 0,z = 0})
+		{x = 0, y = 1, z = 0}, {x = 0, y = 0, z = 0})
 	absent_ballooners[playername] = nil
 end
 --set as get_staticdata

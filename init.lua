@@ -64,10 +64,10 @@ local hot_air_balloon_entity_def =
 {
 	initial_properties =
 	{
-		hp_max = 1,
+		hp_max = 20, --higher health so accidental death isn't as easy
 		physical = true,
 		weight = 5,
-		collisionbox = {-0.65, 0, -0.65, 0.65, 1.11, 0.65},
+		collisionbox = {-0.65, -0.01, -0.65, 0.65, 1.11, 0.65},
 		visual = "mesh",
 		mesh = "hot_air_balloons_balloon.obj",
 		textures = {"hot_air_balloons_balloon_model.png"},
@@ -77,7 +77,6 @@ local hot_air_balloon_entity_def =
 		backface_culling = false,
 	},
 	heat = 0,
-	pilot = nil,
 	is_hot_air_balloon = true,
 	
 	on_step = function(self, dtime)
@@ -112,7 +111,7 @@ local hot_air_balloon_entity_def =
 			--attach
 			self.pilot = playername
 			clicker:set_attach(self.object, "",
-				{x = 0,y = 1,z = 0}, {x = 0,y = 0,z = 0})
+				{x = 0, y = 1, z = 0}, {x = 0, y = 0, z = 0})
 		end
 	end,
 	--if pilot leaves start sinking and prepare for next pilot
@@ -132,10 +131,12 @@ local hot_air_balloon_entity_def =
 		end
 		--checking if balloon should despawn when pilot logged off
 		local first_char = string_byte(staticdata)
-		if  first_char == 82 --chr 82 = R
+		--ballooner logged off, balloon will respawn when ballooner logs back in
+		if  first_char == 82 --chr 82 = R 
 		then
 			self.object:remove()
 			return
+		--absent ballooner logged back in
 		elseif first_char == 80 --chr 80 = P
 		then
 			set_rescue(self, string_sub(staticdata, 2))

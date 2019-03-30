@@ -117,7 +117,11 @@ wasd to apply acceleration
 shift to let out hot air, cooling the balloon
 ]]
 local function handle_control(self, vel)
-	local player = minetest.get_player_by_name(self.pilot or "")
+	if not self.pilot
+	then
+		return 0, 0
+	end
+	local player = minetest.get_player_by_name(self.pilot)
 	if not player --player left, balloon should get deleted
 	then
 		return 0, 0
@@ -163,7 +167,14 @@ local function handle_control(self, vel)
 	return 0, 0
 end
 
---handle movement in different cases
+--[[handle movement in different cases
+movement restrictions:
+	-on ground: only vertical movement
+	-on water: free movement, though vertical only if up
+	-submerged: free movement, vertical goes up automatically
+	-in air: completely free movement
+]]
+
 return function(self)
 	local pos_in = self.object:get_pos()
 	local pos_under = vector_new(pos_in.x, pos_in.y - 0.1, pos_in.z)
