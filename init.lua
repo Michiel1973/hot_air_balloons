@@ -1,6 +1,15 @@
-local modpath = minetest.get_modpath("hot_air_balloons")
+--localize functions for better performance
+local string_byte = string.byte
+local string_sub = string.sub
+local get_item_group = minetest.get_item_group
+local add_particlespawner = minetest.add_particlespawner
+local add_item = minetest.add_item
+local get_node = minetest.get_node
+local add_entity = minetest.add_entity
 
-local handle_movement = dofile(modpath.."/movement.lua")
+local modpath = minetest.get_modpath("hot_air_balloons")
+local set_rescue, mark_for_deletion_if_piloted = dofile(modpath .. "/absent_ballooner_rescuing.lua")
+local handle_movement = dofile(modpath .. "/movement.lua")
 
 local is_in_creative = function(name)
 	return creative and creative.is_enabled_for
@@ -29,7 +38,7 @@ end
 local add_heat = function(self, player)
 	local item_stack = player:get_wielded_item()
 	local item_name = item_stack:get_name()
-	local group_coal = minetest.get_item_group(item_name, "coal")
+	local group_coal = get_item_group(item_name, "coal")
 	if group_coal == 0
 	then
 		return false
@@ -41,7 +50,7 @@ local add_heat = function(self, player)
 		self.heat = heat
 		--adding particle effect
 		local pos = self.object:get_pos()
-		minetest.add_particlespawner(get_fire_particle(pos))
+		add_particlespawner(get_fire_particle(pos))
 		if not is_in_creative(player:get_player_name())
 		then
 			item_stack:take_item()
@@ -69,6 +78,7 @@ local hot_air_balloon_entity_def =
 	},
 	heat = 0,
 	pilot = nil,
+	is_hot_air_balloon = true,
 	
 	on_step = function(self, dtime)
 		--decrease heat, move
@@ -95,7 +105,6 @@ local hot_air_balloon_entity_def =
 		local playername = clicker:get_player_name()
 		if self.pilot and self.pilot == playername
 		then
-			--detach
 			self.pilot = nil
 			clicker:set_detach()
 		elseif not self.pilot
@@ -108,16 +117,35 @@ local hot_air_balloon_entity_def =
 	end,
 	--if pilot leaves start sinking and prepare for next pilot
 	on_detach_child = function(self, child)
-		self.pilot = nil
 		self.heat = 0
 		self.object:setvelocity({x = 0, y = 0, z = 0})
 	end,
 	
 	on_activate = function(self, staticdata, dtime_s)
+		--so balloons don't get lost
 		self.object:setvelocity({x = 0, y = 0, z = 0})
+		
+		--checking if balloon was spawned from item or unloaded without pilot
+		if staticdata == ""
+		then
+			return
+		end
+		--checking if balloon should despawn when pilot logged off
+		local first_char = string_byte(staticdata)
+		if  first_char == 82 --chr 82 = R
+		then
+			self.object:remove()
+			return
+		elseif first_char == 80 --chr 80 = P
+		then
+			set_rescue(self, string_sub(staticdata, 2))
+		end
 	end,
 	
-	on_punch = function(self, puncher)
+	get_staticdata = mark_for_deletion_if_piloted,
+	
+	
+	on_punch = function(self, puncher) --drop balloon item
 		if not (puncher and puncher:is_player())
 		then
 			return
@@ -129,7 +157,7 @@ local hot_air_balloon_entity_def =
 			local leftover = inv:add_item("main", "hot_air_balloons:item")
 			if not leftover:is_empty()
 			then
-				minetest.add_item(self.object:get_pos(), leftover)
+				add_item(self.object:get_pos(), leftover)
 			end
 		end
 	end,
@@ -151,7 +179,7 @@ local hot_air_balloon_item_def =
 	function (itemstack, placer, pointed_thing)
 		--places balloon if the clicked thing is a node and the above node is air
 		if pointed_thing.type == "node"
-			and minetest.get_node (pointed_thing.above).name == "air"
+			and get_node (pointed_thing.above).name == "air"
 		then
 			if not is_in_creative(placer:get_player_name())
 			then
@@ -159,7 +187,7 @@ local hot_air_balloon_item_def =
 			end
 			local pos_to_place = pointed_thing.above
 			pos_to_place.y = pos_to_place.y - 0.5 --subtracting 0.5 to place on ground
-			minetest.add_entity(pointed_thing.above, "hot_air_balloons:balloon")
+			add_entity(pointed_thing.above, "hot_air_balloons:balloon")
 		end
 		--add remaining items to inventory
 		return itemstack
@@ -178,7 +206,7 @@ minetest.register_craft(
 minetest.register_craft(
 {
 	type = "fuel",
-	recipe = "boats:boat",
+	recipe = "hot_air_balloons:item",
 	burntime = 20,
 })
 --[[
