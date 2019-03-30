@@ -118,9 +118,8 @@ shift to let out hot air, cooling the balloon
 ]]
 local function handle_control(self, vel)
 	local player = minetest.get_player_by_name(self.pilot or "")
-	if not player
+	if not player --player left, balloon should get deleted
 	then
-		self.pilot = nil
 		return 0, 0
 	end
 	local control = player:get_player_control()
@@ -171,7 +170,6 @@ return function(self)
 	local on_water, in_air = is_water_is_air(pos_under)
 	local acc = vector_new(0, 0, 0)
 	local vel = self.object:getvelocity()
-	local in_water
 	
 	
 	if is_water_is_air(pos_in) --if submerged
