@@ -52,6 +52,11 @@ local on_join = function(player)
 		then
 			local pos = player:get_pos()
 			
+			--for compatibility with version 1.1 of the mod
+			if absent_ballooners[name] == true
+			then
+				absent_ballooners[name] = "hot_air_balloons:balloon"
+			end
 			--minetest doesn't seem to like add_entity on init so a minetest.after is used
 			--player is set as pilot in on_activate
 			after(2,
