@@ -59,147 +59,160 @@ local add_heat = function(self, player)
 	end
 	return true
 end
-
-local hot_air_balloon_entity_def =
-{
-	initial_properties =
+hot_air_balloons = {}
+hot_air_balloons.get_entity_def = function(mesh_name, texture_name)
+	return
 	{
-		hp_max = 1, --higher health so accidental death isn't as easy
-		physical = true,
-		weight = 5,
-		collisionbox = {-0.65, -0.01, -0.65, 0.65, 1.11, 0.65},
-		visual = "mesh",
-		mesh = "hot_air_balloons_balloon.obj",
-		textures = {"hot_air_balloons_balloon_model.png"},
-		is_visible = true,
-		makes_footstep_sound = false,
-		automatic_rotate = false,
-		backface_culling = false,
-	},
-	heat = 0,
-	is_hot_air_balloon = true,
-	
-	on_step = function(self, dtime)
-		--decrease heat, move
-		if self.heat > 0
-		then
-			self.heat = self.heat - 1
-		end
-		handle_movement(self)
-	end,
-	on_rightclick = function (self, clicker)
-		--if hoding coal, increase heat, else mount/dismount
-		if not clicker or not clicker:is_player()
-		then
-			return
-		end
-		--checking if clicker is holding coal
-		--heating balloon and returning if yes
-		if add_heat(self, clicker)
-		then
-			return
-		end
+		initial_properties =
+		{
+			hp_max = 1,
+			physical = true,
+			weight = 5,
+			collisionbox = {-0.65, -0.01, -0.65, 0.65, 1.11, 0.65},
+			visual = "mesh",
+			mesh = "hot_air_balloons_balloon.obj",
+			textures = {"hot_air_balloons_balloon_model.png"},
+			is_visible = true,
+			makes_footstep_sound = false,
+			automatic_rotate = false,
+			backface_culling = false,
+		},
+		heat = 0,
+		is_hot_air_balloon = true,
 		
-		--if not holding coal:
-		local playername = clicker:get_player_name()
-		if self.pilot and self.pilot == playername
-		then
-			self.pilot = nil
-			clicker:set_detach()
-		elseif not self.pilot
-		then
-			--attach
-			self.pilot = playername
-			clicker:set_attach(self.object, "",
-				{x = 0, y = 1, z = 0}, {x = 0, y = 0, z = 0})
-		end
-	end,
-	--if pilot leaves start sinking and prepare for next pilot
-	on_detach_child = function(self, child)
-		self.heat = 0
-		self.object:setvelocity({x = 0, y = 0, z = 0})
-	end,
-	
-	on_activate = function(self, staticdata, dtime_s)
-		self.object:set_armor_groups({punch_operable = 1})
-		--so balloons don't get lost
-		self.object:setvelocity({x = 0, y = 0, z = 0})
-		
-		--checking if balloon was spawned from item or unloaded without pilot
-		if staticdata == ""
-		then
-			return
-		end
-		--checking if balloon should despawn when pilot logged off
-		local first_char = string_byte(staticdata)
-		--ballooner logged off, balloon will respawn when ballooner logs back in
-		if  first_char == 82 --chr 82 = R 
-		then
-			self.object:remove()
-			return
-		--absent ballooner logged back in
-		elseif first_char == 80 --chr 80 = P
-		then
-			set_rescue(self, string_sub(staticdata, 2))
-		end
-	end,
-	
-	get_staticdata = mark_for_deletion_if_piloted,
-	
-	
-	on_punch = function(self, puncher) --drop balloon item
-		if self.pilot
-		then
-			return
-		elseif not (puncher and puncher:is_player())
-		then
-			return
-		else
-			self.object:remove()
-			local inv = puncher:get_inventory()
-			if not is_in_creative(puncher:get_player_name())
-				or not inv:contains_item("main", "hot_air_balloons:item")
+		on_step = function(self, dtime)
+			--decrease heat, move
+			if self.heat > 0
 			then
-				local leftover = inv:add_item("main", "hot_air_balloons:item")
-				if not leftover:is_empty()
+				self.heat = self.heat - 1
+			end
+			handle_movement(self)
+		end,
+		on_rightclick = function (self, clicker)
+			--if hoding coal, increase heat, else mount/dismount
+			if not clicker or not clicker:is_player()
+			then
+				return
+			end
+			--checking if clicker is holding coal
+			--heating balloon and returning if yes
+			if add_heat(self, clicker)
+			then
+				return
+			end
+			
+			--if not holding coal:
+			local playername = clicker:get_player_name()
+			if self.pilot and self.pilot == playername
+			then
+				self.pilot = nil
+				clicker:set_detach()
+			elseif not self.pilot
+			then
+				--attach
+				self.pilot = playername
+				clicker:set_attach(self.object, "",
+					{x = 0, y = 1, z = 0}, {x = 0, y = 0, z = 0})
+			end
+		end,
+		--if pilot leaves start sinking and prepare for next pilot
+		on_detach_child = function(self, child)
+			self.heat = 0
+			self.object:setvelocity({x = 0, y = 0, z = 0})
+		end,
+		
+		on_activate = function(self, staticdata, dtime_s)
+			self.object:set_armor_groups({punch_operable = 1})
+			--so balloons don't get lost
+			self.object:setvelocity({x = 0, y = 0, z = 0})
+			
+			--checking if balloon was spawned from item or unloaded without pilot
+			if staticdata == ""
+			then
+				return
+			end
+			--checking if balloon should despawn when pilot logged off
+			local first_char = string_byte(staticdata)
+			--ballooner logged off, balloon will respawn when ballooner logs back in
+			if  first_char == 82 --chr 82 = R 
+			then
+				self.object:remove()
+				return
+			--absent ballooner logged back in
+			elseif first_char == 80 --chr 80 = P
+			then
+				set_rescue(self, string_sub(staticdata, 2))
+			end
+		end,
+		
+		get_staticdata = mark_for_deletion_if_piloted,
+		
+		
+		on_punch = function(self, puncher) --drop balloon item
+			if self.pilot
+			then
+				return
+			elseif not (puncher and puncher:is_player())
+			then
+				return
+			else
+				self.object:remove()
+				local inv = puncher:get_inventory()
+				if not is_in_creative(puncher:get_player_name())
+					or not inv:contains_item("main", "hot_air_balloons:item")
 				then
-					add_item(self.object:get_pos(), leftover)
+					local leftover = inv:add_item("main", "hot_air_balloons:item")
+					if not leftover:is_empty()
+					then
+						add_item(self.object:get_pos(), leftover)
+					end
 				end
 			end
-		end
-	end,
-}
-minetest.register_entity("hot_air_balloons:balloon", hot_air_balloon_entity_def)
+		end,
+	}
+end
+
+
 
 
 
 
 --Defining and registering hot air balloon item
-local hot_air_balloon_item_def =
-{
-	description = "Hot Air Balloon",
-	inventory_image = "hot_air_balloons_balloon.png",
-	stack_max = 1,
-	liquids_pointable = true,
-	groups = {flammable = 2},
-	on_place =
-	function (itemstack, placer, pointed_thing)
-		--places balloon if the clicked thing is a node and the above node is air
-		if pointed_thing.type == "node"
-			and get_node (pointed_thing.above).name == "air"
-		then
-			if not is_in_creative(placer:get_player_name())
+hot_air_balloons.get_item_def = function(description, texture, object_name)
+return
+	{
+		description = description,
+		inventory_image = texture,
+		stack_max = 1,
+		liquids_pointable = true,
+		groups = {flammable = 2},
+		on_place =
+		function (itemstack, placer, pointed_thing)
+			--places balloon if the clicked thing is a node and the above node is air
+			if pointed_thing.type == "node"
+				and get_node (pointed_thing.above).name == "air"
 			then
-				itemstack:take_item()
+				if not is_in_creative(placer:get_player_name())
+				then
+					itemstack:take_item()
+				end
+				local pos_to_place = pointed_thing.above
+				pos_to_place.y = pos_to_place.y - 0.5 --subtracting 0.5 to place on ground
+				add_entity(pointed_thing.above, object_name)
 			end
-			local pos_to_place = pointed_thing.above
-			pos_to_place.y = pos_to_place.y - 0.5 --subtracting 0.5 to place on ground
-			add_entity(pointed_thing.above, "hot_air_balloons:balloon")
+			--add remaining items to inventory
+			return itemstack
 		end
-		--add remaining items to inventory
-		return itemstack
-	end
-}
+	}
+end
+
+local hot_air_balloon_entity_def = hot_air_balloons.get_entity_def("hot_air_balloons_balloon.obj", "hot_air_balloons_balloon_model.png")
+minetest.register_entity("hot_air_balloons:balloon", hot_air_balloon_entity_def)
+
+local hot_air_balloon_item_def = hot_air_balloons.get_item_def(
+		minetest.translate("hot_air_balloons", "Hot Air Balloon"),
+		"hot_air_balloons_balloon.png",
+		"hot_air_balloons:balloon")
 minetest.register_craftitem("hot_air_balloons:item", hot_air_balloon_item_def)
 minetest.register_craft(
 {
