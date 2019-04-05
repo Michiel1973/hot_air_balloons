@@ -12,12 +12,15 @@ local absent_ballooners = minetest.deserialize(storage:get_string("absent_balloo
 local leave_while_ballooning = function(player)
 	local parent = player:get_attach()
 	if parent and not parent:is_player()
-		and parent:get_luaentity().is_hot_air_balloon
 	then
-		--remove() only works if someone else is in the area,
-		--hence the need for mark_for_deletion
-		parent:remove()
-		absent_ballooners[player:get_player_name()] = true
+		local balloon_type = parent:get_luaentity().balloon_type
+		if balloon_type
+		then
+			--remove() only works if someone else is in the area,
+			--hence the need for mark_for_deletion
+			parent:remove()
+			absent_ballooners[player:get_player_name()] = balloon_type
+		end
 	end
 end
 
@@ -54,7 +57,7 @@ local on_join = function(player)
 			after(2,
 				function()
 					--concatenating "P" with name signals that player should be set as attach
-					add_entity(pos, "hot_air_balloons:balloon", "P" .. name)
+					add_entity(pos, absent_ballooners[name], "P" .. name)
 				end)
 		end
 	end

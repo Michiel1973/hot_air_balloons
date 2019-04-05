@@ -59,9 +59,13 @@ local add_heat = function(self, player)
 	end
 	return true
 end
+
+--global table, has fields get_entity_def and get_item_def
+--custom balloons right now turn into normal ones when the pilot leaves
 hot_air_balloons = {}
-hot_air_balloons.get_entity_def = function(mesh_name, texture_name)
+hot_air_balloons.get_entity = function(name, mesh_name, texture_name)
 	return
+	name,
 	{
 		initial_properties =
 		{
@@ -78,7 +82,7 @@ hot_air_balloons.get_entity_def = function(mesh_name, texture_name)
 			backface_culling = false,
 		},
 		heat = 0,
-		is_hot_air_balloon = true,
+		balloon_type = name,
 		
 		on_step = function(self, dtime)
 			--decrease heat, move
@@ -172,14 +176,9 @@ hot_air_balloons.get_entity_def = function(mesh_name, texture_name)
 	}
 end
 
-
-
-
-
-
---Defining and registering hot air balloon item
-hot_air_balloons.get_item_def = function(description, texture, object_name)
+hot_air_balloons.get_item = function(name, description, texture, object_name)
 return
+	name,
 	{
 		description = description,
 		inventory_image = texture,
@@ -205,15 +204,20 @@ return
 		end
 	}
 end
+--registering the balloon entity, item and recepies
 
-local hot_air_balloon_entity_def = hot_air_balloons.get_entity_def("hot_air_balloons_balloon.obj", "hot_air_balloons_balloon_model.png")
-minetest.register_entity("hot_air_balloons:balloon", hot_air_balloon_entity_def)
+minetest.register_entity(hot_air_balloons.get_entity(
+		"hot_air_balloons:balloon",
+		"hot_air_balloons_balloon.obj",
+		"hot_air_balloons_balloon_model.png"))
 
-local hot_air_balloon_item_def = hot_air_balloons.get_item_def(
+minetest.register_craftitem(hot_air_balloons.get_item(
+		"hot_air_balloons:item",
 		minetest.translate("hot_air_balloons", "Hot Air Balloon"),
 		"hot_air_balloons_balloon.png",
-		"hot_air_balloons:balloon")
-minetest.register_craftitem("hot_air_balloons:item", hot_air_balloon_item_def)
+		"hot_air_balloons:balloon"))
+		
+
 minetest.register_craft(
 {
 	output = "hot_air_balloons:item",
