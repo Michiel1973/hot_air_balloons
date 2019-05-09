@@ -218,24 +218,4 @@ minetest.register_craftitem(hot_air_balloons.get_item(
 		"hot_air_balloons:balloon"))
 		
 
-minetest.register_craft(
-{
-	output = "hot_air_balloons:item",
-	recipe = {
-		{"default:paper", "default:paper",      "default:paper"},
-		{"default:paper", "bucket:bucket_lava", "default:paper"},
-		{"",              "group:wood",         ""             },
-	},
-})
-minetest.register_craft(
-{
-	type = "fuel",
-	recipe = "hot_air_balloons:item",
-	burntime = 20,
-})
---[[
-minetest.register_craft(
-{
-	type = "aircraft"
-}
-]]
+dofile(modpath .. "/craft.lua")
