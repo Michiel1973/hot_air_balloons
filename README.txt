@@ -8,9 +8,12 @@ Controls:
 
 
 
-dependencies: default, bucket
-	
-Crafting recipe:
+optional dependencies:
+	default, bucket (enable crafting recipe 1 if installed together)
+	mcl_core, mcl_mobitems, mcl_buckets (enable crafting recipe 2 if installed together)
+
+
+Crafting recipe 1 (Minetest Game and most derivatives):
 [P] := paper
 [W] := wood
 [L] := lava bucket
@@ -20,6 +23,15 @@ Crafting recipe:
 [P][L][P]
 [ ][W][ ]
 
+Crafting recipe 2 (MineClone 2):
+[L] := leather
+[W] := wood
+[V] := lava bucket
+[S] := string
+
+[L][L][L]
+[L][V][L]
+[S][W][S]
 
 (*)any item with the "coal" group works for fuel. Higher coal group means higher heat
 	Note that coal blocks and ore from the default mod don't have the coal group
