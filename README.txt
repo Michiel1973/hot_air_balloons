@@ -1,3 +1,5 @@
+MERGED INTO AMAZONIA MASTER
+
 This mod adds craftable and ridable hot air balloons to minetest.
 Controls:
 	right click with coal lump: increase heat and buoyancy (*)
